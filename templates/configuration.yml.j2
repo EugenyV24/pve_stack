@@ -1,0 +1,54 @@
+server:
+  address: 'tcp://:9091/'
+log:
+  level: info
+theme: dark
+identity_validation:
+  reset_password:
+    jwt_secret: {{ vault_authelia_jwt_secret }}
+totp:
+  issuer: {{ base_domain }}
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+    password:
+      algorithm: argon2id
+      iterations: 3
+      salt_length: 16
+      parallelism: 4
+      memory: 65536
+access_control:
+  default_policy: deny
+  rules:
+    - domain: 'authelia.{{ base_domain }}'
+      policy: bypass
+    - domain: 'grafana.{{ base_domain }}'
+      policy: two_factor
+    - domain: 'prometheus.{{ base_domain }}'
+      policy: two_factor
+    - domain: 'pve.{{ base_domain }}'
+      policy: two_factor
+session:
+  name: authelia_session
+  secret: {{ vault_authelia_session_secret }}
+  expiration: 1h
+  inactivity: 5m
+  cookies:
+    - domain: '{{ base_domain }}'
+      authelia_url: 'https://authelia.{{ base_domain }}'
+      default_redirection_url: 'https://grafana.{{ base_domain }}'
+  redis:
+    host: authelia-redis
+    port: 6379
+    password: {{ vault_redis_password }}
+regulation:
+  max_retries: 3
+  find_time: 120
+  ban_time: 300
+storage:
+  encryption_key: {{ vault_authelia_storage_encryption_key }}
+  local:
+    path: /config/db.sqlite3
+notifier:
+  filesystem:
+    filename: /config/notifications.txt

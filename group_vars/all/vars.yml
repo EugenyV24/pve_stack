@@ -1,0 +1,25 @@
+---
+# Базовый домен, под которым будут висеть поддомены authelia/grafana/prometheus/pve.
+# Для локальной сети можно использовать что-то вроде home.example.internal
+base_domain: home.example.com
+
+# Traefik dashboard в insecure-режиме (без auth) — включайте только для локальной отладки
+traefik_dashboard_insecure: false
+
+# Адреса бэкендов, которые проксирует Traefik
+grafana_host: 192.168.1.10
+prometheus_host: 192.168.1.10
+proxmox_host: 192.168.1.2
+
+# Список пользователей Authelia.
+# password_hash генерируется командой:
+#   docker run --rm authelia/authelia:latest authelia crypto hash generate argon2 --password 'ВАШ_ПАРОЛЬ'
+authelia_users:
+  - username: admin
+    displayname: "Admin User"
+    email: admin@example.com
+    disabled: false
+    password_hash: "{{ vault_admin_password_hash }}"
+    groups:
+      - admins
+      - dev

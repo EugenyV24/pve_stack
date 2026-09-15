@@ -1,0 +1,12 @@
+users:
+{% for user in authelia_users %}
+  {{ user.username }}:
+    disabled: {{ user.disabled | default(false) | lower }}
+    displayname: "{{ user.displayname }}"
+    password: "{{ user.password_hash }}"
+    email: {{ user.email }}
+    groups:
+{% for group in user.groups %}
+      - {{ group }}
+{% endfor %}
+{% endfor %}

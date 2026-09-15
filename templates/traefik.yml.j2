@@ -1,0 +1,21 @@
+api:
+  dashboard: true
+  insecure: {{ traefik_dashboard_insecure | default(false) | lower }}
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ":443"
+providers:
+  file:
+    filename: /config.yml
+    watch: true
+tls:
+  certificates:
+    - certFile: /local.crt
+      keyFile: /local.key

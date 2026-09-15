@@ -1,0 +1,63 @@
+http:
+  routers:
+    authelia:
+      rule: "Host(`authelia.{{ base_domain }}`)"
+      entryPoints:
+        - websecure
+      service: authelia
+      middlewares:
+        - authelia
+      tls: {}
+    grafana:
+      rule: "Host(`grafana.{{ base_domain }}`)"
+      entryPoints:
+        - websecure
+      service: grafana
+      middlewares:
+        - authelia
+      tls: {}
+    prometheus:
+      rule: "Host(`prometheus.{{ base_domain }}`)"
+      entryPoints:
+        - websecure
+      service: prometheus
+      middlewares:
+        - authelia
+      tls: {}
+    proxmox:
+      rule: "Host(`pve.{{ base_domain }}`)"
+      entryPoints:
+        - websecure
+      service: proxmox
+      tls: {}
+  services:
+    authelia:
+      loadBalancer:
+        servers:
+          - url: "http://authelia:9091"
+    grafana:
+      loadBalancer:
+        servers:
+          - url: "http://{{ grafana_host }}:3000"
+    prometheus:
+      loadBalancer:
+        servers:
+          - url: "http://{{ prometheus_host }}:9090"
+    proxmox:
+      loadBalancer:
+        servers:
+          - url: "https://{{ proxmox_host }}:8006"
+        serversTransport: "proxmox-insecure"
+  serversTransports:
+    proxmox-insecure:
+      insecureSkipVerify: true
+  middlewares:
+    authelia:
+      forwardAuth:
+        address: "http://authelia:9091/api/verify?rd=https://authelia.{{ base_domain }}"
+        trustForwardHeader: true
+        authResponseHeaders:
+          - Remote-User
+          - Remote-Groups
+          - Remote-Name
+          - Remote-Email

@@ -1,0 +1,15 @@
+# Скопируйте этот файл в vault.yml и зашифруйте его:
+#   cp group_vars/all/vault.yml.example group_vars/all/vault.yml
+#   ansible-vault encrypt group_vars/all/vault.yml
+#
+# Сгенерировать случайные секреты можно так:
+#   openssl rand -hex 32
+#
+# Хэш пароля пользователя генерируется так:
+#   docker run --rm authelia/authelia:latest authelia crypto hash generate argon2 --password 'ВАШ_ПАРОЛЬ'
+
+vault_redis_password: "CHANGE_ME_use_openssl_rand_-hex_32"
+vault_authelia_jwt_secret: "CHANGE_ME_use_openssl_rand_-hex_32"
+vault_authelia_session_secret: "CHANGE_ME_use_openssl_rand_-hex_32"
+vault_authelia_storage_encryption_key: "CHANGE_ME_use_openssl_rand_-hex_32"
+vault_admin_password_hash: "$argon2id$v=19$m=65536,t=3,p=4$CHANGE$ME"
