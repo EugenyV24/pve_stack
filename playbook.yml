@@ -1,0 +1,67 @@
+---
+- name: Установка Traefik v3 + Authelia (File Provider Setup)
+  hosts: monitoring
+  become: yes
+
+  tasks:
+    - name: Создаём Docker сеть proxy
+      docker_network:
+        name: proxy
+        state: present
+      ignore_errors: yes
+
+    - name: Создаём директории для проекта
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /opt/authelia
+        - /opt/authelia/traefik
+        - /opt/authelia/authelia
+        - /opt/authelia/authelia/redis
+
+    - name: Копируем docker-compose.yml
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: /opt/authelia/docker-compose.yml
+        mode: '0644'
+
+    - name: Копируем traefik.yml
+      template:
+        src: templates/traefik.yml.j2
+        dest: /opt/authelia/traefik/traefik.yml
+        mode: '0644'
+
+    - name: Копируем config.yml (маршруты Traefik)
+      template:
+        src: templates/config.yml.j2
+        dest: /opt/authelia/traefik/config.yml
+        mode: '0644'
+
+    - name: Копируем configuration.yml для Authelia
+      template:
+        src: templates/configuration.yml.j2
+        dest: /opt/authelia/authelia/configuration.yml
+        mode: '0644'
+
+    - name: Копируем users_database.yml для Authelia
+      template:
+        src: templates/users_database.yml.j2
+        dest: /opt/authelia/authelia/users_database.yml
+        mode: '0600'
+
+    - name: Останавливаем старые контейнеры
+      command: docker compose down
+      args:
+        chdir: /opt/authelia
+      ignore_errors: yes
+
+    - name: Запускаем стек заново
+      command: docker compose up -d
+      args:
+        chdir: /opt/authelia
+
+    - name: Финальное сообщение
+      debug:
+        msg: "✅ Traefik v3 (File Provider) + Authelia установлены! Откройте https://authelia.{{ base_domain }}"
